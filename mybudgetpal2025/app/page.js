@@ -1,9 +1,15 @@
-
+import Link from "next/link"
 
 export default function Home() {
   return(
     <div>
-      Hello beginning phase, tami here
+      <div>
+      Welcome to BudgetPal
+      </div>
+
+      <Link href="/signup">
+          SignUp
+      </Link>
     </div>
   )
 }
