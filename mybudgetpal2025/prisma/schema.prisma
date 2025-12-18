@@ -1,0 +1,50 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CategoryType {
+  FOOD
+  RENT
+  ENTERTAINMENT
+  OTHER
+}
+
+model User {
+  id        String     @id @default(cuid())
+  name      String
+  email     String  @unique
+  password  String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  expenses  Expense[]
+}
+
+model Expense {
+  id            String    @id @default(cuid())
+  amount        Int
+  description   String
+  userId        String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  /*
+  *onDelete automatically cleans up the database if a user is deleted.
+  *Therefore if a user is deleted, all data entries will be removed alongside.
+  */
+  user          User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  categoryType  CategoryType  @default(OTHER)
+}
+
+//if updated this file, run npm prisma generate
