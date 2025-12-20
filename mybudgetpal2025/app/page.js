@@ -8,7 +8,7 @@ export default function Home() {
       </div>
 
       <Link href="/signup">
-          SignUp
+          Create your account
       </Link>
     </div>
   )

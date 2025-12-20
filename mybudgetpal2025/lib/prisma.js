@@ -1,5 +1,5 @@
 //updated for prisma 7
-//needed to install npm install @prisma/adapter-pg pg
+//needed to do npm install @prisma/adapter-pg pg
 import { PrismaClient } from '../src/generated/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';

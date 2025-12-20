@@ -2,6 +2,21 @@
 const nextConfig = {
   /* config options here */
   reactCompiler: true,
+
+  /**
+   * Included these lines of code to show the users
+   * profile picture in the dashboard
+   */
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'lh3.googleusercontent.com',
+      },
+    ],
+  },
+
+
 };
 
 export default nextConfig;

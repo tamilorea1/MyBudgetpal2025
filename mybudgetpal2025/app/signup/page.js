@@ -39,7 +39,6 @@ export default function SignupPage() {
             <input
             type="text"
             name="name"
-            required
             placeholder="Enter your name"
             />
 
@@ -47,8 +46,6 @@ export default function SignupPage() {
             <input
             type="email"
             name="email"
-            required
-
             placeholder="Enter your email"
             />
 
@@ -57,12 +54,15 @@ export default function SignupPage() {
             type="password"
             name="password"
             minLength={6}
-            required
             placeholder="Enter your Password"
             />
 
             <button type="submit" disabled={isPending}>
-                {isPending ? 'Signing Up...' : 'SignUp'}
+                {isPending ? 'Signing Up...' : 'Continue'}
+            </button>
+
+            <button type="submit" disabled={isPending} value='google' name="google">
+              {isPending ? 'Signing Up with Google...' : 'Signup with Google'}
             </button>
 
             {/**
@@ -71,13 +71,13 @@ export default function SignupPage() {
              {state?.error && <p style={{ color: 'red' }}>{state.error}</p>}
              {state?.message && <p style={{ color: 'green' }}>{state.message}</p>}
 
-            {/* <p>
+            <p>
                 Already have an account?
 
                 <Link href='/login'>
                     Login
                 </Link>
-            </p> */}
+            </p>
       </form>
     </div>
   )

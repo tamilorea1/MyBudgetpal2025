@@ -1,4 +1,3 @@
-// prisma.config.js
 import "dotenv/config";
 import { defineConfig, env } from "prisma/config";
 

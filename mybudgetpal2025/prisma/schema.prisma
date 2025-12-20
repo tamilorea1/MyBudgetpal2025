@@ -25,7 +25,7 @@ model User {
   id        String     @id @default(cuid())
   name      String
   email     String  @unique
-  password  String
+  password  String?       //This field is updated due to the possibility of the user using their google account to sign up
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   expenses  Expense[]
@@ -48,4 +48,4 @@ model Expense {
   categoryType  CategoryType  @default(OTHER)
 }
 
-//if updated this file, run npm prisma generate
+//if updated this file, run npx prisma generate
