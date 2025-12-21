@@ -19,7 +19,8 @@
 import {prisma} from '@/lib/prisma'
 import bcrypt from 'bcryptjs'
 import { redirect } from 'next/navigation'
-import { signIn, signOut } from '@/app/auth'
+import { signIn, signOut, auth } from '@/app/auth'
+import { revalidatePath } from 'next/cache'
 
 
 /**
@@ -189,4 +190,73 @@ export async function login(prevState, formData) {
  */
 export async function logout(prevState, formData) {
     await signOut({redirectTo: '/'})
+}
+
+/**
+ * ADD EXPENSE ACTION
+ * Allows the user to add expenses to their profile
+ * @param {*} prevState 
+ * @param {*} formData 
+ * @returns 
+ */
+export async function addExpense(prevState, formData) {
+
+    const session = await auth()
+
+    /**
+     * Check if the user trying to add en expense is logged in
+     */
+    if (!session?.user) {
+        return{
+            error: 'You must be logged in to add an expense'
+        }
+    }
+
+    //Gets the current user session
+    const currentUser = session.user.id
+
+
+    /**
+     * Form Data that will be created in dashboard eventually
+     * 
+     * Wrapped amount with an int since it's initially returned as a string.
+     * But the type in our schema.prisma is Int so they have to be the same else an error occurs.
+     * 
+     * Also updated categoryTyepe to ensure that if user types 'food' it updates to 'FOOD'
+     * This is because category types are capitalized in schema.prisma, so they should match
+     */
+    const amount = parseInt(formData.get('amount')) 
+
+    const description = formData.get('description')
+
+    const categoryType = formData.get('categoryType').toUpperCase()
+
+    /**
+     * Will create the amount, description, and category type (FOOD, ENTERTAINMENT, RENT, OTHER) of an expense based on the user who's logged in
+     */
+    const addedExpense = await prisma.expense.create({
+        data: {
+            amount: amount,
+            description: description,
+            categoryType: categoryType,
+            /**
+             * This tells the Expense model which user it belongs to
+             * Since userId is our foreign key that connects to User, we assign the current user's session to it.
+             */
+            userId: currentUser
+        }
+    })
+
+    /**
+     * This refreshes the page automatically when an expense is added
+     * Without this, the user CAN add an expense. BUT would have to manually refresh the window to see the update
+     */
+    revalidatePath('/dashboard')
+
+
+    //success message
+    return{
+        message: 'Expense added successfully'
+    }
+
 }

@@ -38,7 +38,6 @@ export default async function DashboardPage() {
 
   /**
    * Authentication Guard
-   * 
    * if user doesn't exist and they're trying to access this page
    * redirect back to home page
    */
