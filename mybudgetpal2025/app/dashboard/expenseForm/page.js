@@ -12,9 +12,10 @@ export default function ExpenseFormPage() {
     <div>
       <form action={formAction}>
         <input
-        type='text'
+        type='number'
         placeholder='Enter expense amount'
         name='amount'
+        step="0.01"
         />
 
         <input
@@ -33,6 +34,10 @@ export default function ExpenseFormPage() {
         <button type='submit' disabled={isPending}>
             {isPending ? 'Adding your expense...' : 'Add new expense'}
         </button>
+
+        {state.error && <p style={{color: 'red'}}>{state.error}</p>}
+
+        {state.message && <p style={{color: 'green'}}>{state.message}</p>}
       </form>
     </div>
   )

@@ -225,11 +225,20 @@ export async function addExpense(prevState, formData) {
      * Also updated categoryTyepe to ensure that if user types 'food' it updates to 'FOOD'
      * This is because category types are capitalized in schema.prisma, so they should match
      */
-    const amount = parseInt(formData.get('amount')) 
+    const amount = parseFloat(formData.get('amount')) 
 
     const description = formData.get('description')
 
     const categoryType = formData.get('categoryType').toUpperCase()
+
+    /**
+     * Validation check to ensure an amount and a description is entered
+     */
+    if (!amount || !description) {
+        return{
+            error: 'Please enter an amount and description to add an expense'
+        }
+    }
 
     /**
      * Will create the amount, description, and category type (FOOD, ENTERTAINMENT, RENT, OTHER) of an expense based on the user who's logged in
@@ -259,4 +268,46 @@ export async function addExpense(prevState, formData) {
         message: 'Expense added successfully'
     }
 
+}
+
+export async function deleteExpense(prevState,formData) {
+    
+
+    const session = await auth()
+
+    //checks if the user is logged in. A user needs to be logged in, in order to use the functionality
+    if(!session?.user){
+        return{
+            error: 'You must be logged in to delete an expense'
+        }
+    }
+
+    /**
+     * Store the current users id 
+     * As well as store the expense id of an expense
+     */
+    const currentUser = session.user.id
+    
+    const expenseId = formData.get('id')
+
+
+    /**
+     * Delete an expense based on its id and
+     * based on the id of the current user for security
+     */
+    await prisma.expense.delete({
+        where: {
+            id: expenseId,
+            userId: currentUser
+        }
+    })
+
+    //refreshes page automatically
+    revalidatePath('/dashboard')
+
+
+    //success message
+    return{
+        message: 'Expense deleted successfully'
+    }
 }

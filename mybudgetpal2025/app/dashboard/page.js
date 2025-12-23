@@ -5,6 +5,8 @@ import Image from 'next/image'
 import LogoutPage from '../components/logout/page'
 import ExpenseFormPage from './expenseForm/page'
 import {prisma} from '@/lib/prisma'
+import { deleteExpense } from '@/lib/actions'
+import DeleteExpenseFormPage from './deleteExpense/page'
 
 /**
  * PAGE 2: DASHBOARD PAGE
@@ -96,17 +98,32 @@ export default async function DashboardPage() {
 
       <div>
         {getUserData.map((expense) => (
-          <div key={expense.id}>
-            <strong>{expense.description}</strong>
+        <div key={expense.id} style={{ 
+          border: '1px solid #ddd', 
+          padding: '15px', 
+          margin: '10px 0', 
+          borderRadius: '8px',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center'
+        }}>
+          <div>
+            <h3 style={{ margin: 0 }}>{expense.description}</h3>
+            <span style={{ fontSize: '0.8rem', color: '#666', backgroundColor: '#eee', padding: '2px 6px', borderRadius: '4px' }}>
+              {expense.categoryType}
+            </span>
+            <p style={{ margin: '5px 0 0 0', fontWeight: 'bold' }}>
+              ${expense.amount.toFixed(2)}
+            </p>
+        </div>
 
-            <p>Amount: ${expense.amount.toFixed(2)}</p>
-            <p>Category: {expense.categoryType}</p>
-          </div>
-
-        ))}
+          {/* Delete component */}
+          <DeleteExpenseFormPage id={expense.id} />
       </div>
-      
-
+))}
+        
+      </div>
+  
       <LogoutPage/>
 
     </div>
