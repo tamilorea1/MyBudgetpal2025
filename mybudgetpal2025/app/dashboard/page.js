@@ -1,8 +1,10 @@
-import React from 'react'
+
 import { auth } from '../auth'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
 import LogoutPage from '../components/logout/page'
+import ExpenseFormPage from './expenseForm/page'
+import {prisma} from '@/lib/prisma'
 
 /**
  * PAGE 2: DASHBOARD PAGE
@@ -36,6 +38,7 @@ export default async function DashboardPage() {
    */
   const session = await auth()
 
+
   /**
    * Authentication Guard
    * if user doesn't exist and they're trying to access this page
@@ -44,6 +47,29 @@ export default async function DashboardPage() {
   if(!session?.user){
     redirect("/")
   }
+
+  const loggedInUser = session.user.id
+
+  /**
+   * Gets all the information (amount & description) of every expense based on the logged in user
+   */
+  const getUserData = await prisma.expense.findMany({
+    where:{
+      userId: loggedInUser
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  })
+
+  /**
+   * Logic to calculate and update total balance
+   */
+  const totalBalance = getUserData.reduce((accumulator, expense) => {
+    return accumulator + expense.amount
+  }, 0)
+
+
 
   /**
    * Just displays user name, email and image.
@@ -61,6 +87,25 @@ export default async function DashboardPage() {
       width={72}
       height={72}
       />
+
+      <ExpenseFormPage/>
+
+      <div>
+        ${totalBalance.toFixed(2)}
+      </div>
+
+      <div>
+        {getUserData.map((expense) => (
+          <div key={expense.id}>
+            <strong>{expense.description}</strong>
+
+            <p>Amount: ${expense.amount.toFixed(2)}</p>
+            <p>Category: {expense.categoryType}</p>
+          </div>
+
+        ))}
+      </div>
+      
 
       <LogoutPage/>
 
