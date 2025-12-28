@@ -311,3 +311,39 @@ export async function deleteExpense(prevState,formData) {
         message: 'Expense deleted successfully'
     }
 }
+
+export async function editExpense(formData) {
+
+    const session = await auth()
+
+    if(!session.user){
+        return{
+            error: 'Need to be logged in to edit an expense!'
+        }
+    }
+
+    const loggedInUser = session.user.id
+
+    const expenseId = formData.get('id')
+    const amount = parseFloat(formData.get('amount'))
+    const description = formData.get('description')
+    const categoryType = formData.get('categoryType')
+
+    await prisma.expense.update({
+        where: {
+            id : expenseId,
+            userId: loggedInUser
+        },
+        data: {
+            amount: amount,
+            description: description,
+            categoryType: categoryType
+        }
+    })
+
+    revalidatePath('/dashboard')
+
+    return{
+        message: 'Expense updated successfully'
+    }
+}

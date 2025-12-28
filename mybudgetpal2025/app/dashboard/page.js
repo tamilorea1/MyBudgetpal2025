@@ -5,8 +5,8 @@ import Image from 'next/image'
 import LogoutPage from '../components/logout/page'
 import ExpenseFormPage from './expenseForm/page'
 import {prisma} from '@/lib/prisma'
-import { deleteExpense } from '@/lib/actions'
 import DeleteExpenseFormPage from './deleteExpense/page'
+import EditExpensePage from './editExpense/page'
 
 /**
  * PAGE 2: DASHBOARD PAGE
@@ -119,6 +119,9 @@ export default async function DashboardPage() {
 
           {/* Delete component */}
           <DeleteExpenseFormPage id={expense.id} />
+
+          {/*Edit expense component */}
+          <EditExpensePage id={expense.id} amount={expense.amount} description={expense.description} categoryType={expense.categoryType}/>
       </div>
 ))}
         
