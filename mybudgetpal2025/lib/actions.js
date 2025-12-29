@@ -312,7 +312,7 @@ export async function deleteExpense(prevState,formData) {
     }
 }
 
-export async function editExpense(formData) {
+export async function editExpense(prevState, formData) {
 
     const session = await auth()
 
@@ -328,6 +328,12 @@ export async function editExpense(formData) {
     const amount = parseFloat(formData.get('amount'))
     const description = formData.get('description')
     const categoryType = formData.get('categoryType')
+
+    if (!amount || !description) {
+        return{
+            error: 'Please enter an amount or description to move forward'
+        }
+    }
 
     await prisma.expense.update({
         where: {

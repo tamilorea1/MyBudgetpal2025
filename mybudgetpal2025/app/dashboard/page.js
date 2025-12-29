@@ -1,4 +1,3 @@
-
 import { auth } from '../auth'
 import { redirect } from 'next/navigation'
 import Image from 'next/image'
@@ -7,6 +6,8 @@ import ExpenseFormPage from './expenseForm/page'
 import {prisma} from '@/lib/prisma'
 import DeleteExpenseFormPage from './deleteExpense/page'
 import EditExpensePage from './editExpense/page'
+import Link from "next/link"
+import styles from './dashboard.module.css'
 
 /**
  * PAGE 2: DASHBOARD PAGE
@@ -20,8 +21,12 @@ import EditExpensePage from './editExpense/page'
  * - Redirects to home page if not logged in
  * - Session data contains: user.id, user.name, user.email, user.image
  * 
+ * 1. Async SearchParams: searchParams is a Promise that must be awaited.
+ * 2. URL State Management: Using the URL (?category=X) as the "Source of Truth" for filtering.
+ * 3. Server-Side Filtering: Prisma filters data at the database level, not in the browser.
+ *
  */
-export default async function DashboardPage() {
+export default async function DashboardPage({searchParams}) {
 
   /**
    * returns session object if user is logged in
@@ -53,11 +58,25 @@ export default async function DashboardPage() {
   const loggedInUser = session.user.id
 
   /**
+   * 1. EXTRACT FILTER FROM URL
+   * We 'await' the searchParams promise to get the current query parameters.
+   * If the URL is /dashboard?category=FOOD, then selectedCategory = "FOOD".
+   */
+  const params = await searchParams
+
+  const selectedCategory = params.category
+  
+  /**
    * Gets all the information (amount & description) of every expense based on the logged in user
+   * 
+   * We pass the category directly to Prisma. 
+   * 'undefined' is a special Prisma trick: if selectedCategory is null (the "ALL" link),
+   * Prisma ignores this filter entirely and returns all records.
    */
   const getUserData = await prisma.expense.findMany({
     where:{
-      userId: loggedInUser
+      userId: loggedInUser,
+      categoryType: selectedCategory ? selectedCategory : undefined
     },
     orderBy: {
       createdAt: 'desc'
@@ -74,60 +93,109 @@ export default async function DashboardPage() {
 
 
   /**
-   * Just displays user name, email and image.
+   * Dashboard with styled components
    */
   return (
-    <div>
-      WE MADE IT TO THE dashboard
+    <div className={styles.container}>
+      
+      {/* Header with user info and logout */}
+      <div className={styles.header}>
+        <div className={styles.userInfo}>
+          <Image
+            src={session?.user.image}
+            alt={session?.user.name}
+            width={72}
+            height={72}
+            className={styles.profileImage}
+          />
+          <div className={styles.userDetails}>
+            <p className={styles.userName}>{session?.user.name}</p>
+            <p className={styles.userEmail}>{session?.user.email}</p>
+          </div>
+        </div>
+        <LogoutPage/>
+      </div>
 
-      <p>{session?.user.name}</p>
-      <p>{session?.user.email}</p>
-
-      <Image
-      src={session?.user.image}
-      alt={session?.user.name}
-      width={72}
-      height={72}
-      />
-
+      {/* Add Expense Form */}
       <ExpenseFormPage/>
 
-      <div>
-        ${totalBalance.toFixed(2)}
+      {/* Total Balance Card */}
+      <div className={styles.balanceCard}>
+        <p className={styles.balanceLabel}>Total Balance</p>
+        <h2 className={styles.balanceAmount}>${totalBalance.toFixed(2)}</h2>
       </div>
 
-      <div>
-        {getUserData.map((expense) => (
-        <div key={expense.id} style={{ 
-          border: '1px solid #ddd', 
-          padding: '15px', 
-          margin: '10px 0', 
-          borderRadius: '8px',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div>
-            <h3 style={{ margin: 0 }}>{expense.description}</h3>
-            <span style={{ fontSize: '0.8rem', color: '#666', backgroundColor: '#eee', padding: '2px 6px', borderRadius: '4px' }}>
-              {expense.categoryType}
-            </span>
-            <p style={{ margin: '5px 0 0 0', fontWeight: 'bold' }}>
-              ${expense.amount.toFixed(2)}
+      {/* Category Filter Navigation */}
+      <nav className={styles.filterNav}>
+        <Link 
+          href='/dashboard' 
+          className={!selectedCategory ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
+        >
+          ALL
+        </Link>
+        <Link 
+          href='/dashboard?category=FOOD' 
+          className={selectedCategory === 'FOOD' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
+        >
+          FOOD
+        </Link>
+        <Link 
+          href='/dashboard?category=RENT' 
+          className={selectedCategory === 'RENT' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
+        >
+          RENT
+        </Link>
+        <Link 
+          href='/dashboard?category=ENTERTAINMENT' 
+          className={selectedCategory === 'ENTERTAINMENT' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
+        >
+          ENTERTAINMENT
+        </Link>
+        <Link 
+          href='/dashboard?category=OTHER' 
+          className={selectedCategory === 'OTHER' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
+        >
+          OTHER
+        </Link>
+      </nav>
+
+      {/* Expenses List */}
+      <div className={styles.expensesList}>
+        {getUserData.length === 0 ? (
+          <div className={styles.emptyState}>
+            <p className={styles.emptyStateText}>
+              No expenses yet. Add your first expense above!
             </p>
-        </div>
+          </div>
+        ) : (
+          getUserData.map((expense) => (
+            <div key={expense.id} className={styles.expenseCard}>
+              <div className={styles.expenseInfo}>
+                <h3 className={styles.expenseDescription}>{expense.description}</h3>
+                <span className={`${styles.expenseCategory} ${styles[`category${expense.categoryType.charAt(0) + expense.categoryType.slice(1).toLowerCase()}`]}`}>
+                  {expense.categoryType}
+                </span>
+                <p className={styles.expenseAmount}>
+                  ${expense.amount.toFixed(2)}
+                </p>
+              </div>
 
-          {/* Delete component */}
-          <DeleteExpenseFormPage id={expense.id} />
-
-          {/*Edit expense component */}
-          <EditExpensePage id={expense.id} amount={expense.amount} description={expense.description} categoryType={expense.categoryType}/>
+              <div className={styles.expenseActions}>
+                {/* Edit expense component */}
+                <EditExpensePage 
+                  id={expense.id} 
+                  amount={expense.amount} 
+                  description={expense.description} 
+                  categoryType={expense.categoryType}
+                />
+                
+                {/* Delete component */}
+                <DeleteExpenseFormPage id={expense.id} />
+              </div>
+            </div>
+          ))
+        )}
       </div>
-))}
-        
-      </div>
-  
-      <LogoutPage/>
 
     </div>
   )

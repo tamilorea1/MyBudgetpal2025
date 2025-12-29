@@ -1,6 +1,7 @@
 import React from 'react'
 import { editExpense } from '@/lib/actions'
 import './EditExpenseModal.css'
+import { useActionState, useEffect } from 'react'
 
 export default function EditExpenseModal({
     onClose,
@@ -19,6 +20,18 @@ export default function EditExpenseModal({
         onClose();
     }
 
+
+    const initialState = {message: null, error: null}
+
+    const [state, formAction, isPending] = useActionState(editExpense, initialState)
+
+    useEffect(() => {
+    // If we have a success message, close the modal
+    if (state?.message === 'Expense updated successfully') {
+        onClose();
+        }
+    }, [state, onClose])
+
     /**
      * We use defaultValue since we are using server actions
      * We'd only use 'value' if it was accompanied by some state like useState
@@ -35,7 +48,7 @@ export default function EditExpenseModal({
                 </div>
 
                 {/* Form */}
-                <form action={handleSubmit} className="modal-form">
+                <form action={formAction} className="modal-form">
                     <input type='hidden' name='id' value={id}/>
 
                     {/* Amount Input */}
@@ -76,11 +89,14 @@ export default function EditExpenseModal({
                     {/* Action Buttons */}
                     <div className="button-group">
                         <button type='submit' className="btn-primary">
-                            Save Changes
+                            {isPending ? 'Saving Changes...' : 'Save Changes'}
                         </button>
                         <button type='button' onClick={onClose} className="btn-secondary">
                             Cancel
                         </button>
+
+                        {state?.error && <p style={{ color: 'red' }}>{state.error}</p>}
+                        {state?.message && <p style={{ color: 'red' }}>{state.message}</p>}
                     </div>
                 </form>
             </div>

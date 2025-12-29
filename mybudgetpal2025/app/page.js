@@ -10,6 +10,10 @@ export default function Home() {
       <Link href="/signup">
           Create your account
       </Link>
+
+      <Link href="/login">
+          Login
+      </Link>
     </div>
   )
 }
