@@ -8,6 +8,7 @@ import DeleteExpenseFormPage from './deleteExpense/page'
 import EditExpensePage from './editExpense/page'
 import Link from "next/link"
 import styles from './dashboard.module.css'
+import AnalyticsChartPage from '../components/analytics/page'
 
 /**
  * PAGE 2: DASHBOARD PAGE
@@ -83,6 +84,40 @@ export default async function DashboardPage({searchParams}) {
     }
   })
 
+
+  /**
+   * GROUPS EXPENSES BY ITS CATEGORY TYPE
+   * This returns something like this:
+   * groupBy = {
+   * FOOD: 20.50,
+   * RENT: 1200.00,
+   * ENTERTAINMENT: 50.00,
+   * OTHER: 100.00
+   * }
+   */
+  const groupBy =  getUserData.reduce((acc, expense) => {
+      const category = expense.categoryType
+
+      //If the category doesn't exist in our accumulator yet, start with 0
+      if(!acc[category]){
+        acc[category] = 0
+      }
+
+      //add the current expense amount to that category's total
+      acc[category] += expense.amount
+      return acc
+    }, {})
+  
+
+  /**
+   * Converts object into an array of objects
+   * Gives the array of objects a name : value pair making it easy for rechart to use
+   */
+  const groupedCategory = Object.keys(groupBy).map((category) => ({
+    name: category,
+    value: groupBy[category]
+  }))
+
   /**
    * Logic to calculate and update total balance
    */
@@ -91,6 +126,7 @@ export default async function DashboardPage({searchParams}) {
   }, 0)
 
 
+  const hasData = getUserData.length > 0
 
   /**
    * Dashboard with styled components
@@ -124,6 +160,13 @@ export default async function DashboardPage({searchParams}) {
         <p className={styles.balanceLabel}>Total Balance</p>
         <h2 className={styles.balanceAmount}>${totalBalance.toFixed(2)}</h2>
       </div>
+
+      {/*Recharts illustration */}
+      {hasData ? (
+        <AnalyticsChartPage data={groupedCategory}/>
+      ) : (
+        <p>Add some expenses to see your spending breakdown</p>
+      )}
 
       {/* Category Filter Navigation */}
       <nav className={styles.filterNav}>

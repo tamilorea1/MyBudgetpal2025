@@ -1,6 +1,7 @@
 'use client'
 import { deleteExpense } from '@/lib/actions'
 import { useActionState } from 'react'
+import { Trash2 } from 'lucide-react'
 
 export default function DeleteExpenseFormPage({id}) {
 
@@ -16,7 +17,7 @@ export default function DeleteExpenseFormPage({id}) {
              */}
               <input type='hidden' name='id' value={id}/>
               <button type='submit' style={{ color: 'red' }} disabled={isPending}>
-                {isPending ? 'Deleting expense...' : 'Delete'}
+                {isPending ? 'Deleting expense...' : <Trash2 size={18}/>}
               </button>
 
               {state.error && <p>{state.error}</p>}

@@ -1,8 +1,7 @@
 'use client'
 import React, { useState } from 'react'
-import { editExpense } from '@/lib/actions'
 import EditExpenseModal from './editModal/page'
-
+import { Pencil } from 'lucide-react'
 /**
  * Passed props which will show pre populated data of the previously entered amount, description, and category type
  * @param {*} param0 
@@ -26,7 +25,7 @@ export default function EditExpensePage({
     //If edit button is clicked, open the modal
     <div>
         <button onClick={() => setOpen(true)}>
-            Edit
+            <Pencil size={18}/>
         </button>
 
 
