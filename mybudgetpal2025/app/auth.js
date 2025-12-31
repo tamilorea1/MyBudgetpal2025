@@ -1,9 +1,9 @@
 /**
- * Handles all providers such as Google and Credentials
+ * Handles all providers such as Credentials
  */
 
 import NextAuth from "next-auth";
-import GoogleProvider from "next-auth/providers/google" 
+// import GoogleProvider from "next-auth/providers/google" 
 import CredentialsProvider from "next-auth/providers/credentials"
 import {prisma} from "@/lib/prisma"
 import bcrypt from "bcryptjs"
@@ -34,20 +34,20 @@ export const {handlers, auth, signIn, signOut } = NextAuth({
          * - GOOGLE_CLIENT_ID: Your OAuth 2.0 Client ID from Google
          * - GOOGLE_CLIENT_SECRET: Your OAuth 2.0 Client Secret from Google
          */
-        GoogleProvider({
-            //GOOGLE_CLIENT_ID should be in our .env file
-            clientId: process.env.GOOGLE_CLIENT_ID,
-            clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-
-            //This asks the user if they're fine using google to sign up
-            authorization: {
-                params: {
-                    prompt: "consent",
-                    access_type: "offline",
-                    response_type: "code"
-                }
-            }
-        }),
+        // GoogleProvider({
+        //     //GOOGLE_CLIENT_ID should be in our .env file
+        //     clientId: process.env.GOOGLE_CLIENT_ID,
+        //     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+        //     allowDangerousEmailAccountLinking: true,
+        //     //This asks the user if they're fine using google to sign up
+        //     authorization: {
+        //         params: {
+        //             prompt: "consent",
+        //             access_type: "offline",
+        //             response_type: "code"
+        //         }
+        //     }
+        // }),
 
         /**
          * CREDENTIALS PROVIDER (Email & Password)
@@ -113,14 +113,53 @@ export const {handlers, auth, signIn, signOut } = NextAuth({
         strategy: 'jwt'
     },
     callbacks: {
-        async jwt({token, user}) {
+        async jwt({token, user, account}) {
             if (user) {
                 token.id = user.id
+
+                if (account?.provider === 'google') {
+                    const dbUser = await prisma.user.findUnique({
+                        where:{
+                            email: user.email
+                        }
+                    })
+                    if (dbUser) {
+                        token.id = dbUser.id
+                    }
+                    else{
+                        token.id = user.id
+                    }
+                }
             }
             return token
         },
+        // async signIn({user, account}) {
+        //     if(account.provider === 'google'){
+        //         try {
+        //             const existingUser = await prisma.user.findUnique({
+        //                 where:{
+        //                     email: user.email
+        //                 }
+        //             })
+
+        //             if(!existingUser){
+        //                 await prisma.user.create({
+        //                     data: {
+        //                         email: user.email,
+        //                         name: user.name,
+        //                     }
+        //                 })
+        //             }
+        //             return true
+        //         } catch (error) {
+        //             console.log('Error saving Google user:', error)
+        //             return false
+        //         }
+        //     }
+        //     return true
+        // },
         async session({session, token}) {
-            if (token) {
+            if (token && session.user) {
                 session.user.id = token.id
             }
             return session

@@ -7,7 +7,7 @@ import {prisma} from '@/lib/prisma'
 import DeleteExpenseFormPage from './deleteExpense/page'
 import EditExpensePage from './editExpense/page'
 import Link from "next/link"
-import styles from './dashboard.module.css'
+
 import AnalyticsChartPage from '../components/analytics/page'
 
 /**
@@ -132,114 +132,120 @@ export default async function DashboardPage({searchParams}) {
    * Dashboard with styled components
    */
   return (
-    <div className={styles.container}>
-      
-      {/* Header with user info and logout */}
-      <div className={styles.header}>
-        <div className={styles.userInfo}>
-          <Image
-            src={session?.user.image}
-            alt={session?.user.name}
-            width={72}
-            height={72}
-            className={styles.profileImage}
-          />
-          <div className={styles.userDetails}>
-            <p className={styles.userName}>{session?.user.name}</p>
-            <p className={styles.userEmail}>{session?.user.email}</p>
+    <main style={{
+      minHeight: '100vh',
+      background: '#f8fafc',
+      fontFamily: 'system-ui, -apple-system, sans-serif',
+      padding: '40px 20px'
+    }}>
+      <div style={{ maxWidth: '1000px', margin: '0 auto' }}>
+        
+        {/* HEADER SECTION */}
+        <header style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+            {session.user.image && (
+              <Image src={session.user.image} alt="Profile" width={48} height={48} style={{ borderRadius: '50%' }} />
+            )}
+            <div>
+              <h2 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>{session.user.name}</h2>
+              <p style={{ fontSize: '0.85rem', color: '#64748b', margin: 0 }}>Personal Finance Dashboard</p>
+            </div>
+          </div>
+          <LogoutPage />
+        </header>
+
+        {/* HERO GRID: BALANCE & ANALYTICS */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '24px', marginBottom: '40px' }}>
+          <div style={{ 
+            background: 'linear-gradient(135deg, #1e293b 0%, #0f172a 100%)', 
+            color: 'white', padding: '32px', borderRadius: '24px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)' 
+          }}>
+            <p style={{ margin: 0, opacity: 0.7, fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '1px' }}>Total Balance</p>
+            <h1 style={{ fontSize: '3rem', margin: '12px 0', fontWeight: '800' }}>${totalBalance.toFixed(2)}</h1>
+            <div style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.1)', padding: '4px 12px', borderRadius: '20px', width: 'fit-content' }}>
+               Active Tracking
+            </div>
+          </div>
+
+          <div style={{ background: 'white', padding: '24px', borderRadius: '24px', border: '1px solid #e2e8f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <AnalyticsChartPage data={groupedCategory} />
           </div>
         </div>
-        <LogoutPage/>
-      </div>
 
-      {/* Add Expense Form */}
-      <ExpenseFormPage/>
+        {/* QUICK ADD SECTION */}
+        <section style={{ marginBottom: '48px' }}>
+          <ExpenseFormPage />
+        </section>
 
-      {/* Total Balance Card */}
-      <div className={styles.balanceCard}>
-        <p className={styles.balanceLabel}>Total Balance</p>
-        <h2 className={styles.balanceAmount}>${totalBalance.toFixed(2)}</h2>
-      </div>
+        {/* CATEGORY FILTER NAV */}
+        <nav style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
+          {['ALL', 'FOOD', 'RENT', 'ENTERTAINMENT', 'OTHER'].map((category) => {
+            const isActive = (category === 'ALL' && !groupedCategory) || groupedCategory === category;
+            return (
+              <Link
+                key={category}
+                href={category === 'ALL' ? '/dashboard' : `/dashboard?category=${category}`}
+                style={{
+                  textDecoration: 'none',
+                  fontSize: '0.8rem',
+                  fontWeight: '700',
+                  padding: '8px 16px',
+                  borderRadius: '20px',
+                  transition: 'all 0.2s ease',
+                  background: isActive ? '#1e293b' : 'white',
+                  color: isActive ? 'white' : '#64748b',
+                  border: isActive ? '1px solid #1e293b' : '1px solid #e2e8f0',
+                }}
+              >
+                {category}
+              </Link>
+            );
+          })}
+        </nav>
 
-      {/*Recharts illustration */}
-      {hasData ? (
-        <AnalyticsChartPage data={groupedCategory}/>
-      ) : (
-        <p>Add some expenses to see your spending breakdown</p>
-      )}
-
-      {/* Category Filter Navigation */}
-      <nav className={styles.filterNav}>
-        <Link 
-          href='/dashboard' 
-          className={!selectedCategory ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
-        >
-          ALL
-        </Link>
-        <Link 
-          href='/dashboard?category=FOOD' 
-          className={selectedCategory === 'FOOD' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
-        >
-          FOOD
-        </Link>
-        <Link 
-          href='/dashboard?category=RENT' 
-          className={selectedCategory === 'RENT' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
-        >
-          RENT
-        </Link>
-        <Link 
-          href='/dashboard?category=ENTERTAINMENT' 
-          className={selectedCategory === 'ENTERTAINMENT' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
-        >
-          ENTERTAINMENT
-        </Link>
-        <Link 
-          href='/dashboard?category=OTHER' 
-          className={selectedCategory === 'OTHER' ? `${styles.filterLink} ${styles.filterLinkActive}` : styles.filterLink}
-        >
-          OTHER
-        </Link>
-      </nav>
-
-      {/* Expenses List */}
-      <div className={styles.expensesList}>
-        {getUserData.length === 0 ? (
-          <div className={styles.emptyState}>
-            <p className={styles.emptyStateText}>
-              No expenses yet. Add your first expense above!
-            </p>
+        {/* EXPENSE LIST SECTION */}
+        <section>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+            <h3 style={{ fontSize: '1.2rem', fontWeight: '700', color: '#1e293b' }}>Recent Transactions</h3>
           </div>
-        ) : (
-          getUserData.map((expense) => (
-            <div key={expense.id} className={styles.expenseCard}>
-              <div className={styles.expenseInfo}>
-                <h3 className={styles.expenseDescription}>{expense.description}</h3>
-                <span className={`${styles.expenseCategory} ${styles[`category${expense.categoryType.charAt(0) + expense.categoryType.slice(1).toLowerCase()}`]}`}>
-                  {expense.categoryType}
-                </span>
-                <p className={styles.expenseAmount}>
-                  ${expense.amount.toFixed(2)}
-                </p>
-              </div>
 
-              <div className={styles.expenseActions}>
-                {/* Edit expense component */}
-                <EditExpensePage 
-                  id={expense.id} 
-                  amount={expense.amount} 
-                  description={expense.description} 
-                  categoryType={expense.categoryType}
-                />
-                
-                {/* Delete component */}
-                <DeleteExpenseFormPage id={expense.id} />
-              </div>
-            </div>
-          ))
-        )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+            {getUserData.length === 0 ? (
+              <p style={{ textAlign: 'center', color: '#94a3b8', padding: '40px' }}>No expenses found. Start by adding one above!</p>
+            ) : (
+              getUserData.map((expense) => (
+                <div key={expense.id} style={{
+                  background: 'white', padding: '16px 24px', borderRadius: '16px', border: '1px solid #e2e8f0',
+                  display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'transform 0.2s'
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <div style={{ 
+                      width: '48px', height: '48px', borderRadius: '12px', background: '#f1f5f9', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem' 
+                    }}>
+                      {expense.categoryType === 'FOOD' ? '🍕' : expense.categoryType === 'RENT' ? '🏠' : '💰'}
+                    </div>
+                    <div>
+                      <h4 style={{ margin: 0, fontSize: '1rem', fontWeight: '600', color: '#1e293b' }}>{expense.description}</h4>
+                      <span style={{ fontSize: '0.75rem', color: '#64748b', fontWeight: '600', textTransform: 'uppercase' }}>{expense.categoryType}</span>
+                    </div>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+                    <span style={{ fontSize: '1.1rem', fontWeight: '700', color: '#1e293b' }}>-${expense.amount.toFixed(2)}</span>
+                    <div style={{ display: 'flex', gap: '8px' }}>
+                      <EditExpensePage id={expense.id} amount={expense.amount} description={expense.description} categoryType={expense.categoryType} />
+                      <DeleteExpenseFormPage id={expense.id} />
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </section>
       </div>
-
-    </div>
+    </main>
   )
 }
+
+

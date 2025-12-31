@@ -50,17 +50,17 @@ export async function signUp(prevState, formData) {
     const name = formData.get('name')
     const email = formData.get('email')
     const password = formData.get('password')
-    const google = formData.get('google')  // This will be 'google' if Google button clicked
+    // const google = formData.get('google')  // This will be 'google' if Google button clicked
 
     /**
      * Handling Google OAuth
      * If user clicked "Sign up with Google" button, redirect to Google OAuth flow
      */
-    if (google === 'google') {
-        await signIn(google, {redirectTo: "/dashboard"})
-        return;
+    // if (google === 'google') {
+    //     await signIn(google, {redirectTo: "/dashboard"})
+    //     return;
 
-    }
+    // }
 
     //track if user was successfully created
     let userCreated = false
@@ -138,9 +138,6 @@ try {
         redirect('/login')
 
     }
-
-
-    
 
 }
 
