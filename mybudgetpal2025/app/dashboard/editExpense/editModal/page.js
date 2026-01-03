@@ -1,4 +1,4 @@
-import React from 'react'
+'use client'
 import { editExpense } from '@/lib/actions'
 import { useActionState, useEffect } from 'react'
 

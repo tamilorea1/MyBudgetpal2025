@@ -1,0 +1,34 @@
+services:
+  db:
+    image: postgres:15-alpine # Pinned version for stability
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck: # Ensures DB is ready before app starts
+      test: ["CMD-SHELL", "pg_isready -U myuser -d budgetpal_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  web:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # Using 'db' as the hostname matches the service name above
+      - DATABASE_URL=${DATABASE_URL}
+      - NEXTAUTH_SECRET=${AUTH_SECRET}
+      - NEXTAUTH_URL=${NEXTAUTH_URL}
+      - AUTH_TRUST_HOST=${AUTH_TRUST_HOST}
+    depends_on:
+      db:
+        condition: service_healthy # Wait for healthcheck to pass
+
+volumes:
+  postgres_data:

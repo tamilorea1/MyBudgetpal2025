@@ -180,7 +180,7 @@ export default async function DashboardPage({searchParams}) {
         {/* CATEGORY FILTER NAV */}
         <nav style={{ display: 'flex', gap: '10px', marginBottom: '24px', flexWrap: 'wrap' }}>
           {['ALL', 'FOOD', 'RENT', 'ENTERTAINMENT', 'OTHER'].map((category) => {
-            const isActive = (category === 'ALL' && !groupedCategory) || groupedCategory === category;
+            const isActive = (category === 'ALL' && !selectedCategory) || selectedCategory === category;
             return (
               <Link
                 key={category}

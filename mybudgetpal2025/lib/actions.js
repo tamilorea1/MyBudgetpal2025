@@ -237,6 +237,12 @@ export async function addExpense(prevState, formData) {
         }
     }
 
+    if (amount <= 0) {
+        return{
+            error: 'Please enter an amount greater than 0 '
+        }
+    }
+
     /**
      * Will create the amount, description, and category type (FOOD, ENTERTAINMENT, RENT, OTHER) of an expense based on the user who's logged in
      */
@@ -329,6 +335,12 @@ export async function editExpense(prevState, formData) {
     if (!amount || !description) {
         return{
             error: 'Please enter an amount or description to move forward'
+        }
+    }
+
+    if (amount <= 0) {
+        return{
+            error: 'Please enter an amount greater than 0'
         }
     }
 
