@@ -9,6 +9,7 @@ export default function ExpenseFormPage() {
 
     // Create a local state to control visibility
     const [showMessage, setShowMessage] = useState(false)
+    const [isHovered, setIsHovered] = useState(false)
 
     useEffect(() => {
         if (state.message) {
@@ -100,17 +101,19 @@ return (
       </div>
 
       {/* Submit Button */}
-      <button type='submit' disabled={isPending} 
+      <button type='submit' disabled={isPending}
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
       style={{
         padding: '12px 24px',
         borderRadius: '10px',
         border: 'none',
-        background: '#2563eb',
+        background: isHovered && !isPending ? '#1d4ed8' : '#2563eb',
         color: 'white',
         fontWeight: '600',
         fontSize: '0.9rem',
         cursor: isPending ? 'not-allowed' : 'pointer',
-        transition: 'all 0.2s ease'
+        transition: 'background 0.2s ease'
       }}>
         {isPending ? 'Adding...' : 'Add Expense'}
       </button>
